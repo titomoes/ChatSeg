@@ -12,6 +12,7 @@
         "fideloper/proxy": "^4.0",
         "laravel/framework": "^6.2",
         "laravel/tinker": "^1.0",
+        "phpseclib/phpseclib": "^2.0",
         "pusher/pusher-php-server": "^4.1"
     },
     "require-dev": {
