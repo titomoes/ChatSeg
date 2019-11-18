@@ -24,6 +24,7 @@
         "vue-template-compiler": "^2.6.10"
     },
     "dependencies": {
+        "crypto-js": "^3.1.9-1",
         "laravel-echo": "^1.6.1",
         "node-rsa": "^1.0.6",
         "pusher-js": "^5.0.2"
