@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\MessageSent;
 use Illuminate\Http\Request;
 use App\Message;
 use Illuminate\Support\Facades\Auth;
+use phpseclib\Crypt\RSA;
 
 class ChatsController extends Controller
 {
@@ -30,7 +32,10 @@ class ChatsController extends Controller
      */
     public function fetchMessages()
     {
-        return Message::with('user')->get();
+        $user = Auth::user();
+        $messagem = Message::where('messages.created_at', '>=', $user->last_login_at)->with('user')
+            ->get();
+        return $messagem;
     }
 
     /**
@@ -41,12 +46,24 @@ class ChatsController extends Controller
      */
     public function sendMessage(Request $request)
     {
+        $mes = $request->all();
         $user = Auth::user();
 
         $message = $user->messages()->create([
-            'message' => $request->input('message')
+            'message' => $mes['mes']
         ]);
         broadcast(new MessageSent($user, $message))->toOthers();
         return ['status' => 'Message Sent!'];
+    }
+
+    public function sendkey(Request $request)
+    {
+        $key = $request->all();
+        $rsa = new RSA();
+        $rsa->setHash('sha1');
+        $rsa->loadKey($key['public_key']);
+        $ket = base64_encode($rsa->encrypt('12345'));
+        return $ket;
+
     }
 }
