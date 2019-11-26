@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Events\MessageSent;
+use App\Key;
+use App\Session;
 use Illuminate\Http\Request;
 use App\Message;
 use Illuminate\Support\Facades\Auth;
+use Keygen\Keygen;
 use phpseclib\Crypt\RSA;
 
 class ChatsController extends Controller
@@ -62,7 +65,16 @@ class ChatsController extends Controller
         $rsa = new RSA();
         $rsa->setHash('sha1');
         $rsa->loadKey($key['public_key']);
-        $ket = base64_encode($rsa->encrypt('12345'));
+        $users = Session::all();
+        $users = $users->filter(function ($value, $key) {
+            if (!($value['user_id'] == null)) {
+                return true;
+            }
+        });
+        if (count($users) == 1) {
+            Key::create(['key' => Keygen::numeric(10)->generate()]);
+        }
+        $ket = base64_encode($rsa->encrypt(Key::latest('created_at')->first()->key));
         return $ket;
 
     }
