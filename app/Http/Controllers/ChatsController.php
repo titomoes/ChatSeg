@@ -61,6 +61,7 @@ class ChatsController extends Controller
 
     public function sendkey(Request $request)
     {
+//        dd($request->all());
         $key = $request->all();
         $rsa = new RSA();
         $rsa->setHash('sha1');

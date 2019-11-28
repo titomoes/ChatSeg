@@ -43,11 +43,13 @@ const app = new Vue({
         key.generateKeyPair();
         key.setOptions('sha1');
         this.sendKey(key.exportKey('public'));
+        console.log('chave publica', key.exportKey('public'));
+        // console.log('chave privada', key.exportKey('private'));
         this.fetchMessages();
         Echo.private('chat')
             .listen('MessageSent', (e) => {
                 this.messages.push({
-                    message:CryptoJS.TripleDES.decrypt(e.message.message, this.keyDES).toString(CryptoJS.enc.Utf8),
+                    message: CryptoJS.TripleDES.decrypt(e.message.message, this.keyDES).toString(CryptoJS.enc.Utf8),
                     user: e.user
                 });
             });
@@ -56,9 +58,11 @@ const app = new Vue({
     methods: {
         fetchMessages() {
             axios.get('/messages').then(response => {
+                console.log('mensagens criptografadas ', response.data);
                 response.data.map(item => {
-                    item.message=CryptoJS.TripleDES.decrypt(item.message, this.keyDES).toString(CryptoJS.enc.Utf8);
+                    item.message = CryptoJS.TripleDES.decrypt(item.message, this.keyDES).toString(CryptoJS.enc.Utf8);
                 });
+                console.log('mensagens descriptografadas ', response.data);
                 this.messages = response.data;
             });
         },
@@ -66,15 +70,17 @@ const app = new Vue({
         sendKey(key_public) {
             let key2 = {'public_key': key_public};
             axios.post('/key', key2).then(response => {
+                console.log('chave_3DES_cifrada', response.data);
                 this.keyDES = key.decrypt(response.data, 'utf8');
+                console.log('chave_3DES_descifrada', this.keyDES);
             });
         },
 
         addMessage(message) {
-            console.log(message);
             this.messages.push(message);
             var ciphertext = CryptoJS.TripleDES.encrypt(message.message, this.keyDES);
-            var  mes={'mes':ciphertext.toString()};
+            console.log('mensagem cifrada com 3DES', ciphertext.toString());
+            var mes = {'mes': ciphertext.toString()};
             axios.post('/messages', mes).then(response => {
                 console.log(response.data);
             });

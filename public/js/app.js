@@ -92969,6 +92969,8 @@ var app = new vue__WEBPACK_IMPORTED_MODULE_0___default.a({
     key.generateKeyPair();
     key.setOptions('sha1');
     this.sendKey(key.exportKey('public'));
+    console.log('chave publica', key.exportKey('public')); // console.log('chave privada', key.exportKey('private'));
+
     this.fetchMessages();
     Echo["private"]('chat').listen('MessageSent', function (e) {
       _this.messages.push({
@@ -92982,9 +92984,11 @@ var app = new vue__WEBPACK_IMPORTED_MODULE_0___default.a({
       var _this2 = this;
 
       axios__WEBPACK_IMPORTED_MODULE_1___default.a.get('/messages').then(function (response) {
+        console.log('mensagens criptografadas ', response.data);
         response.data.map(function (item) {
           item.message = CryptoJS.TripleDES.decrypt(item.message, _this2.keyDES).toString(CryptoJS.enc.Utf8);
         });
+        console.log('mensagens descriptografadas ', response.data);
         _this2.messages = response.data;
       });
     },
@@ -92995,13 +92999,15 @@ var app = new vue__WEBPACK_IMPORTED_MODULE_0___default.a({
         'public_key': key_public
       };
       axios__WEBPACK_IMPORTED_MODULE_1___default.a.post('/key', key2).then(function (response) {
+        console.log('chave_3DES_cifrada', response.data);
         _this3.keyDES = key.decrypt(response.data, 'utf8');
+        console.log('chave_3DES_descifrada', _this3.keyDES);
       });
     },
     addMessage: function addMessage(message) {
-      console.log(message);
       this.messages.push(message);
       var ciphertext = CryptoJS.TripleDES.encrypt(message.message, this.keyDES);
+      console.log('mensagem cifrada com 3DES', ciphertext.toString());
       var mes = {
         'mes': ciphertext.toString()
       };
